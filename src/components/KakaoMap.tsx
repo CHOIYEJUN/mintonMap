@@ -2,8 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import {  Map, MapMarker, CustomOverlayMap } from 'react-kakao-maps-sdk';
 import {inspect} from "util";
 import styled from "styled-components";
+import Modal from 'react-modal';
 
-
+interface Location {
+    title: string;
+    content : string;
+    latlng: { lat: number; lng: number };
+}
 
 const CoodBox = styled.div`
     position : fixed;
@@ -20,21 +25,23 @@ const CoodBox = styled.div`
   border: 1px solid gray;
   
 `
-
+let clickTitle = "";
+let clickContent = "";
 function MapContainer() {
+    // @ts-ignore
+    const mapRef = useRef<CustomOverlayMap | null>(null)!;
 
-    const mapRef = useRef(null);
-
-    const locations = [
-        { title: '카카오', latlng: { lat: 33.450705, lng: 126.570677 } },
-        { title: '생태연못', latlng: { lat: 33.450936, lng: 126.569477 } },
-        { title: '텃밭', latlng: { lat: 33.450879, lng: 126.56994 } },
-        { title: '근린공원', latlng: { lat: 33.451393, lng: 126.570738 } },
+    const locations: Location[] = [
+        { title: '카카오', content : '내용입니다', latlng: { lat: 33.450705, lng: 126.570677 } },
+        { title: '생태연못', content : '내용입니다', latlng: { lat: 33.450936, lng: 126.569477 } },
+        { title: '텃밭', content : '내용입니다',latlng: { lat: 33.450879, lng: 126.56994 } },
+        { title: '근린공원',content : '내용입니다', latlng: { lat: 33.451393, lng: 126.570738 } },
+        { title: '블라블라',content : '내용입니다', latlng: { lat: 33.45296977050732, lng: 126.57501685329325 } },
     ];
 
-    const [coordinates, setCoordinates] = useState(null);
+    const [coordinates, setCoordinates] = useState<{ center: { lat: number; lng: number } } | null>(null);
     const [modalIsOpen, setModalIsOpen] = useState(false);
-    let clickTitle = "";
+
 
     const getCoordinates = () => {
         const map = mapRef.current;
@@ -49,10 +56,10 @@ function MapContainer() {
         }
     };
 
-    const markerClick = (title) => {
-        clickTitle = title;
+    const markerClick = (title: string, content : string) => {
         setModalIsOpen(true);
-
+        clickTitle = title;
+        clickContent = content;
 
     }
 
@@ -80,7 +87,7 @@ function MapContainer() {
                         size: { width: 24, height: 35 },
                     }}
                     title={loc.title}
-                    onClick={() => markerClick(loc.title)}
+                    onClick={() => markerClick(loc.title, loc.content)}
                 />
             ))}
             <CoodBox>
@@ -97,8 +104,23 @@ function MapContainer() {
                 )}
             </CoodBox>
 
-            <Modal isOpen={true}>
+            <Modal
+                isOpen={modalIsOpen}
+                style={{
+                    overlay: {
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        zIndex : 99
+                    },
+                    content: {
+                        width: '300px',
+                        height: '300px',
+                        margin: 'auto',
+                    },
+                }}
+
+            >
                 <p>{clickTitle}</p>
+                <p>{clickContent}</p>
                 <button onClick={()=> setModalIsOpen(false)}>Modal close</button>
             </Modal>
 
